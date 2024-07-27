@@ -1,0 +1,30 @@
+# Use the official Golang image as a base
+FROM golang:1.20 AS builder
+
+# Create a working directory
+WORKDIR /app
+
+# Copy module files and download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the source code into the container
+COPY . .
+
+# Build the Go binary
+RUN go build -o main .
+
+
+FROM debian:bullseye-slim
+
+# Copy the binary from the builder stage
+COPY --from=builder /app/main /app/main
+
+# Set the working directory
+WORKDIR /app
+
+# Define the command to run the application
+CMD ["./main"]
+
+# Expose the port the application will run on
+EXPOSE 5672
